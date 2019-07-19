@@ -1,9 +1,12 @@
 [![Build Status](https://travis-ci.com/jmacdotorg/newsapi-perl.svg?branch=master)](https://travis-ci.com/jmacdotorg/newsapi-perl)
-# NAME
+# Web::NewsAPI
 
-Web::NewsAPI - Fetch and search news headlines and sources from News API
+This Perl module provides a simple, object-oriented interface to
+[the News API](https://newsapi.org), version 2. It supports that API's
+three public endpoints, allowing your code to fetch and search current
+news headlines and sources.
 
-# SYNOPSIS
+# Example
 
     use Web::NewsAPI;
     use v5.10;
@@ -32,195 +35,31 @@ Web::NewsAPI - Fetch and search news headlines and sources from News API
     }
 
     say "Here are some sources for English-language technology news...";
-    my @sources = $newsapi->sources( category => 'technology', language => 'en' );
+    my @sources = $newsapi->sources(
+       category => 'technology', language => 'en' 
+    );
     for my $source ( @sources ) {
        # Each is a Web::NewsAPI::Source object.
        say $source->name;
     }
 
-# DESCRIPTION
+# Installation
 
-This module provides a simple, object-oriented interface to [the News
-API](https://newsapi.org), version 2. It supports that API's three public
-endpoints, allowing your code to fetch and search current news headlines
-and sources.
+This module's most recent release [is on CPAN](https://metacpan.org/pod/Web::NewsAPI)! Your best
+bet is to install it via the CPAN installation tool of your choice. (My
+favorite is [cpanm](https://metacpan.org/pod/App::cpanminus).)
 
-# METHODS
+To instead install it from source, run these commands:
 
-## Class Methods
+    perl Build.PL
+    perl Build build
+    perl Build install # run under sudo to install at system-level
 
-### new
+# Documentation
 
-    my $newsapi = Web::NewsAPI->new( api_key => $your_api_key );
+For full programmer documentation, see [Web::NewsAPI](https://metacpan.org/pod/Web::NewsAPI).
 
-Object constructor. Takes a hash as an argument, whose only recognized
-key is `api_key`. This must be set to a valid News API key. You can
-fetch a key for yourself by registering a free account with News API
-[at its website](https://newsapi.org).
-
-Note that the validity of the API key you provide isn't checked until
-you try calling one of this module's object methods.
-
-## Object Methods
-
-Each of these methods will attempt to call News API using the API key
-you provided during construction. If the call fails, then this module
-will throw an exception, sharing the error code and message passed back
-from News API.
-
-### everything
-
-    my @articles_about_chickens = $newsapi->everything( q => 'chickens' );
-
-Returns a number of [Web::NewsAPI::Article](https://metacpan.org/pod/Web::NewsAPI::Article) objects representing all
-news articles matching the query parameters you provide. The
-hash must contain _at least one_ of the following keys:
-
-- q
-
-    Keywords or phrases to search for.
-
-    See [the News API docs](https://newsapi.org/docs/endpoints/everything)
-    for a complete description of what's allowed here.
-
-- sources
-
-    _Either_ a comma-separated string _or_ an array reference of News API
-    news source ID strings to limit results from.
-
-    See [the News API sources index](https://newsapi.org/sources) for a list
-    of valid source IDs.
-
-- domains
-
-    _Either_ a comma-separated string _or_ an array reference of domains
-    (e.g. "bbc.co.uk, techcrunch.com, engadget.com") to limit results from.
-
-You may also provide any of these optional keys:
-
-- excludeDomains
-
-    _Either_ a comma-separated string _or_ an array reference of domains
-    (e.g. "bbc.co.uk, techcrunch.com, engadget.com") to remove from the
-    results.
-
-- from
-
-    _Either_ an ISO 8601-formatted date-time string _or_ a [DateTime](https://metacpan.org/pod/DateTime)
-    object representing the timestamp of the oldest article allowed.
-
-- to
-
-    _Either_ an ISO 8601-formatted date-time string _or_ a [DateTime](https://metacpan.org/pod/DateTime)
-    object representing the timestamp of the most recent article allowed.
-
-- language
-
-    The 2-letter ISO-639-1 code of the language you want to get headlines
-    for. Possible options include `ar`, `de`, `en`, `es`, `fr`, `he`,
-    `it`, `nl`, `no`, `pt`, `ru`, `se`, `ud`, and `zh`.
-
-- sortBy
-
-    The order to sort the articles in. Possible options: `relevancy`,
-    `popularity`, `publishedAt`. (Default: `publishedAt`)
-
-- pageSize
-
-    The number of results to return per page. 20 is the default, 100 is the
-    maximum.
-
-- page
-
-    Use this to page through the results.
-
-### top\_headlines
-
-    my @articles = $newsapi->top_headlines( country => 'us' );
-
-Returns a number of [Web::NewsAPI::Article](https://metacpan.org/pod/Web::NewsAPI::Article) objects representing
-current top news headlines, narrowed by the supplied argument hash. The
-hash must contain _at least one_ of the following keys:
-
-- country
-
-    Limit returned headlines to a single country, expressed as a 2-letter
-    ISO 3166-1 code. (See [the News API
-    documentation](https://newsapi.org/docs/endpoints/top-headlines) for a
-    full list of country codes it supports.)
-
-    News API will return an error if you mix this with `sources`.
-
-- category
-
-    Limit returned headlines to a single category. Possible options include
-    `business`, `entertainment`, `general`, `health`, `science`,
-    `sports`, and `technology`.
-
-    News API will return an error if you mix this with `sources`.
-
-- sources
-
-    A list of News API source IDs, rendered as a comma-separated string.
-
-    News API will return an error if you mix this with `country` or
-    `category`.
-
-- q
-
-    Keywords or a phrase to search for.
-
-You may also provide either of these optional keys:
-
-- pageSize
-
-    The number of results to return per page (request). 20 is the default,
-    100 is the maximum.
-
-- page
-
-    Use this to page through the results if the total results found is
-    greater than the page size.
-
-### total\_results
-
-    my @articles = $newsapi->top_headlines( country => 'us' );
-    my $number_of_articles = $newsapi->total_results;
-
-Returns the _total_ number of articles that News API claims for the
-most recent ["top\_headlines"](#top_headlines) or ["source"](#source) query. This will often be
-larger than the single "page" of results actually returned by either
-method.
-
-### sources
-
-    my @sources = $newsapi->sources( language => 'en' );
-
-Returns a number of [Web::NewsAPI::Source](https://metacpan.org/pod/Web::NewsAPI::Source) objects reprsenting News
-API's news sources.
-
-You may provide any of these optional parameters:
-
-- category
-
-    Limit sources to a single category. Possible options include
-    `business`, `entertainment`, `general`, `health`, `science`,
-    `sports`, and `technology`.
-
-- country
-
-    Limit sources to a single country, expressed as a 2-letter ISO 3166-1
-    code. (See [the News API
-    documentation](https://newsapi.org/docs/endpoints/sources) for a full
-    list of country codes it supports.)
-
-- language
-
-    Limit sources to a single language. Possible options include `ar`,
-    `de`, `en`, `es`, `fr`, `he`, `it`, `nl`, `no`, `pt`, `ru`,
-    `se`, `ud`, and `zh`.
-
-# NOTES AND BUGS
+# Notes
 
 This is this module's first release (or nearly so). It works for the
 author's own use-cases, but it's probably buggy beyond that. Please
@@ -228,11 +67,11 @@ report issues at [the module's GitHub
 site](https://github.com/jmacdotorg/newsapi-perl). Code and documentation
 pull requests are very welcome!
 
-# AUTHOR
+# Author
 
 Jason McIntosh (jmac@jmac.org)
 
-# COPYRIGHT AND LICENSE
+# Copyright and licence
 
 This software is Copyright (c) 2019 by Jason McIntosh.
 
@@ -240,7 +79,7 @@ This is free software, licensed under:
 
     The MIT (X11) License
 
-# A PERSONAL REQUEST
+# A personal request
 
 My ability to share and maintain free, open-source software like this
 depends upon my living in a society that allows me the free time and
