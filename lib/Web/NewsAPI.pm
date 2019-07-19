@@ -122,8 +122,6 @@ sub _request {
     my $uri = URI->new( $API_BASE_URL . $endpoint );
     $uri->query( $uri->query_form( \%args ) );
 
-    warn "URI: $uri";
-
     my $response = $self->ua->get( $uri );
     if ($response->is_success) {
         my $data_ref = decode_json( $response->content );
@@ -383,9 +381,11 @@ C<se>, C<ud>, and C<zh>.
 
 =head1 NOTES AND BUGS
 
-This is this module's first release (or nearly so). It works for the author's own
-use-cases, but it's probably buggy beyond that. Please report issues at
-L<the module's GitHub site|https://github.com/jmacdotorg/newsapi-perl>. Code and documentation pull requests are very welcome!
+This is this module's first release (or nearly so). It works for the
+author's own use-cases, but it's probably buggy beyond that. Please
+report issues at L<the module's GitHub
+site|https://github.com/jmacdotorg/newsapi-perl>. Code and documentation
+pull requests are very welcome!
 
 =head1 AUTHOR
 
