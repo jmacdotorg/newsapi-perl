@@ -75,9 +75,9 @@ Web::NewsAPI::Artcle - Object class representing a News API article
     api_key => $my_secret_api_key,
  );
 
- say "Here are some articles for English-language technology news...";
- my @articles = $newsapi->everything(
-    category => 'technology', language => 'en'
+ say "Here are some top American-news headlines about science...";
+ my @articles = $newsapi->top_headlines(
+    category => 'science', country => 'us',
  );
  for my $article ( @articles ) {
     say $article->title;

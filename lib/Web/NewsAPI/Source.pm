@@ -58,8 +58,11 @@ Web::NewsAPI::Source - Object class representing a News API source
     api_key => $my_secret_api_key,
  );
 
- say "Here are some sources for English-language technology news...";
- my @sources = $newsapi->sources( category => 'technology', language => 'en' );
+ say "Here are some sources for English-language science news...";
+ my @sources = $newsapi->sources(
+    category => 'science',
+    language => 'en'
+ );
  for my $source ( @sources ) {
     say $source->name;
     if ( defined $source->id ) {

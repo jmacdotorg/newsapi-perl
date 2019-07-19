@@ -227,8 +227,7 @@ for a complete description of what's allowed here.
 =item sources
 
 I<Either> a comma-separated string I<or> an array reference of News API
-news source ID strings (eg bbc.co.uk, techcrunch.com, engadget.com) to
-limit results from.
+news source ID strings to limit results from.
 
 See L<the News API sources index|https://newsapi.org/sources> for a list
 of valid source IDs.
@@ -236,7 +235,7 @@ of valid source IDs.
 =item domains
 
 I<Either> a comma-separated string I<or> an array reference of domains
-(eg bbc.co.uk, techcrunch.com, engadget.com) to limit results from.
+(e.g. "bbc.co.uk, techcrunch.com, engadget.com") to limit results from.
 
 =back
 
@@ -247,7 +246,8 @@ You may also provide any of these optional keys:
 =item excludeDomains
 
 I<Either> a comma-separated string I<or> an array reference of domains
-(eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.
+(e.g. "bbc.co.uk, techcrunch.com, engadget.com") to remove from the
+results.
 
 =item from
 
