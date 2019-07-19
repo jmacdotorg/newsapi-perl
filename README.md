@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/jmacdotorg/newsapi-perl.svg?branch=master)](https://travis-ci.com/jmacdotorg/newsapi-perl)
 # NAME
 
 Web::NewsAPI - Fetch and search news headlines and sources from News API

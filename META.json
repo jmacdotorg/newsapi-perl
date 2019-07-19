@@ -61,6 +61,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/jmacdotorg/newsapi-perl/issues"
+      },
+      "homepage" : "https://github.com/jmacdotorg/newsapi-perl",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/jmacdotorg/newsapi-perl.git",
+         "web" : "https://github.com/jmacdotorg/newsapi-perl"
+      }
+   },
    "version" : "0.001",
    "x_authority" : "cpan:JMAC",
    "x_contributors" : [
