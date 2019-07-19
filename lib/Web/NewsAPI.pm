@@ -209,7 +209,7 @@ from News API.
 
 =head3 everything
 
- my @articles = $newsapi->everything( language => 'en' );
+ my @articles_about_chickens = $newsapi->everything( q => 'chickens' );
 
 Returns a number of L<Web::NewsAPI::Article> objects representing all
 news articles matching the query parameters you provide. The
