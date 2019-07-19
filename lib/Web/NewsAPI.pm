@@ -343,7 +343,7 @@ greater than the page size.
  my $number_of_articles = $newsapi->total_results;
 
 Returns the I<total> number of articles that News API claims for the
-most recent L<"top_headlines"> or L<"source"> query. This will often be
+most recent L<"top_headlines"> or L<"sources"> query. This will often be
 larger than the single "page" of results actually returned by either
 method.
 
