@@ -70,7 +70,7 @@ from News API.
 
 ### everything
 
-    my @articles = $newsapi->everything( language => 'en' );
+    my @articles_about_chickens = $newsapi->everything( q => 'chickens' );
 
 Returns a number of [Web::NewsAPI::Article](https://metacpan.org/pod/Web::NewsAPI::Article) objects representing all
 news articles matching the query parameters you provide. The
@@ -86,8 +86,7 @@ hash must contain _at least one_ of the following keys:
 - sources
 
     _Either_ a comma-separated string _or_ an array reference of News API
-    news source ID strings (eg bbc.co.uk, techcrunch.com, engadget.com) to
-    limit results from.
+    news source ID strings to limit results from.
 
     See [the News API sources index](https://newsapi.org/sources) for a list
     of valid source IDs.
@@ -95,14 +94,15 @@ hash must contain _at least one_ of the following keys:
 - domains
 
     _Either_ a comma-separated string _or_ an array reference of domains
-    (eg bbc.co.uk, techcrunch.com, engadget.com) to limit results from.
+    (e.g. "bbc.co.uk, techcrunch.com, engadget.com") to limit results from.
 
 You may also provide any of these optional keys:
 
 - excludeDomains
 
     _Either_ a comma-separated string _or_ an array reference of domains
-    (eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.
+    (e.g. "bbc.co.uk, techcrunch.com, engadget.com") to remove from the
+    results.
 
 - from
 
