@@ -259,7 +259,7 @@ object representing the timestamp of the oldest article allowed.
 I<Either> an ISO 8601-formatted date-time string I<or> a L<DateTime>
 object representing the timestamp of the most recent article allowed.
 
-=language
+=item language
 
 The 2-letter ISO-639-1 code of the language you want to get headlines
 for. Possible options include C<ar>, C<de>, C<en>, C<es>, C<fr>, C<he>,
