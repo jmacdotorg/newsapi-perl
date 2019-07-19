@@ -2,6 +2,7 @@
 
 use Test::More;
 use FindBin;
+use DateTime;
 
 use lib ("$FindBin::Bin/lib", "$FindBin::Bin/../lib");
 use NewsAPITestUserAgent;
@@ -28,16 +29,33 @@ is ($headlines[0]->author,
     'Christine Wang',
     'Article objects populated with data OK',
 );
+is ($newsapi->total_results, 38, 'Total results is correct');
 }
 
 {
-my @headlines = $newsapi->everything( 'q' => 'foo' );
+my @headlines = $newsapi->everything(
+    from => DateTime->new( year=> 2010, month=> 6, time_zone=>'UTC' ),
+);
 is ( @headlines, 2, 'Got expected number of search results' );
 is ( ref $headlines[0], 'Web::NewsAPI::Article', 'Results are article objects' );
 is ($headlines[0]->author,
     'Jolie Kerr',
     'Article objects populated with data OK'
 );
+is ($newsapi->total_results, 426, 'Total results is correct');
+}
+
+{
+my @headlines = $newsapi->everything(
+    domains=>['example.com','another.example.com'],
+);
+is ( @headlines, 2, 'Got expected number of search results' );
+is ( ref $headlines[0], 'Web::NewsAPI::Article', 'Results are article objects' );
+is ($headlines[0]->author,
+    'Jolie Kerr',
+    'Article objects populated with data OK'
+);
+is ($newsapi->total_results, 426, 'Total results is correct');
 }
 
 {

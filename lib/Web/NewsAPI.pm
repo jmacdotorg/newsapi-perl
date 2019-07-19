@@ -8,6 +8,9 @@ use Moose;
 use Readonly;
 use LWP;
 use JSON;
+use Carp;
+use DateTime::Format::ISO8601::Format;
+use Scalar::Util qw(blessed);
 
 use Web::NewsAPI::Article;
 use Web::NewsAPI::Source;
@@ -26,16 +29,49 @@ has 'api_key' => (
     isa => 'Str',
 );
 
+has 'total_results' => (
+    is => 'rw',
+    isa => 'Maybe[Int]',
+    default => undef,
+);
+
 sub top_headlines {
     my ($self, %args) = @_;
 
     return $self->_make_articles(
-        $self->_request('top-headlines', 'articles', %args)
+        $self->_request( 'top-headlines', 'articles', %args)
     );
 }
 
 sub everything {
     my ($self, %args) = @_;
+
+    # Collapse each source/domain-param into a comma-separated string,
+    # if it's an array.
+    for my $param (qw(source domains excludeDomains) ) {
+        if ( $args{$param} && ( ref $args{$param} eq 'ARRAY' ) ) {
+            $args{$param} = join q{,}, @{$args{$param}};
+        }
+    }
+
+    # Convert time-params into ISO 8601 strings, if they are DateTime
+    # objects. (And throw an exception if they're something weird.)
+    my $dt_formatter = DateTime::Format::ISO8601::Format->new;
+    for my $param (qw(to from)) {
+        if ( $args{$param} && ( blessed $args{$param} ) ) {
+            if ($args{$param}->isa('DateTime')) {
+                $args{$param} =
+                    $dt_formatter->format_datetime(
+                        $args{$param}
+                    );
+            }
+            else {
+                croak "The '$param' parameter of the 'everything' "
+                    . "method must be either a DateTime object or an ISO 8601-"
+                    . "formatted time-string. (Got: $args{$param}";
+            }
+        }
+    }
 
     return $self->_make_articles(
         $self->_request( 'everything', 'articles', %args )
@@ -46,7 +82,7 @@ sub sources {
     my ($self, %args) = @_;
 
     my @sources;
-    for my $source_data ($self->_request( 'sources', 'sources', %args )) {
+    for my $source_data ( $self->_request( 'sources', 'sources', %args ) ) {
         push @sources, Web::NewsAPI::Source->new( $source_data );
     }
 
@@ -86,9 +122,15 @@ sub _request {
     my $uri = URI->new( $API_BASE_URL . $endpoint );
     $uri->query( $uri->query_form( \%args ) );
 
+    warn "URI: $uri";
+
     my $response = $self->ua->get( $uri );
     if ($response->is_success) {
-        return @{ decode_json( $response->content )->{$container} };
+        my $data_ref = decode_json( $response->content );
+        if ( exists $data_ref->{totalResults} ) {
+            $self->total_results( $data_ref->{totalResults} );
+        }
+        return @{ $data_ref->{$container} };
     }
     else {
         my $code = $response->code;
@@ -107,9 +149,9 @@ Web::NewsAPI - Fetch and search news headlines and sources from News API
  use Web::NewsAPI;
  use v5.10;
 
- # To use this module, you need to get a free API key from https://newsapi.org.
- # (The following is a bogus example key that will not actually work. Try it
- # with your own key instead!)
+ # To use this module, you need to get a free API key from
+ # https://newsapi.org. (The following is a bogus example key that will
+ # not actually work. Try it with your own key instead!)
  my $api_key = 'deadbeef1234567890f001f001deadbeef';
 
  my $newsapi = Web::NewsAPI->new(
@@ -167,6 +209,80 @@ you provided during construction. If the call fails, then this module
 will throw an exception, sharing the error code and message passed back
 from News API.
 
+=head3 everything
+
+ my @articles = $newsapi->everything( language => 'en' );
+
+Returns a number of L<Web::NewsAPI::Article> objects representing all
+news articles matching the query parameters you provide. The
+hash must contain I<at least one> of the following keys:
+
+=over
+
+=item q
+
+Keywords or phrases to search for.
+
+See L<the News API docs|https://newsapi.org/docs/endpoints/everything>
+for a complete description of what's allowed here.
+
+=item sources
+
+I<Either> a comma-separated string I<or> an array reference of News API
+news source ID strings (eg bbc.co.uk, techcrunch.com, engadget.com) to
+limit results from.
+
+See L<the News API sources index|https://newsapi.org/sources> for a list
+of valid source IDs.
+
+=item domains
+
+I<Either> a comma-separated string I<or> an array reference of domains
+(eg bbc.co.uk, techcrunch.com, engadget.com) to limit results from.
+
+=back
+
+You may also provide any of these optional keys:
+
+=over
+
+=item excludeDomains
+
+I<Either> a comma-separated string I<or> an array reference of domains
+(eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.
+
+=item from
+
+I<Either> an ISO 8601-formatted date-time string I<or> a L<DateTime>
+object representing the timestamp of the oldest article allowed.
+
+=item to
+
+I<Either> an ISO 8601-formatted date-time string I<or> a L<DateTime>
+object representing the timestamp of the most recent article allowed.
+
+=language
+
+The 2-letter ISO-639-1 code of the language you want to get headlines
+for. Possible options include C<ar>, C<de>, C<en>, C<es>, C<fr>, C<he>,
+C<it>, C<nl>, C<no>, C<pt>, C<ru>, C<se>, C<ud>, and C<zh>.
+
+=item sortBy
+
+The order to sort the articles in. Possible options: C<relevancy>,
+C<popularity>, C<publishedAt>. (Default: C<publishedAt>)
+
+=item pageSize
+
+The number of results to return per page. 20 is the default, 100 is the
+maximum.
+
+=item page
+
+Use this to page through the results.
+
+=back
+
 =head3 top_headlines
 
  my @articles = $newsapi->top_headlines( country => 'us' );
@@ -223,12 +339,15 @@ greater than the page size.
 
 =back
 
-=head3 everything
+=head3 total_results
 
- my @articles = $newsapi->everything( language => 'en' );
+ my @articles = $newsapi->top_headlines( country => 'us' );
+ my $number_of_articles = $newsapi->total_results;
 
-Returns a number of L<Web::NewsAPI::Article> objects representing all
-news articles matching the query parameters you provide.
+Returns the I<total> number of articles that News API claims for the
+most recent L<"top_headlines"> or L<"source"> query. This will often be
+larger than the single "page" of results actually returned by either
+method.
 
 =head3 sources
 
@@ -262,6 +381,12 @@ C<se>, C<ud>, and C<zh>.
 
 =back
 
+=head1 NOTES AND BUGS
+
+This is this module's first release (or nearly so). It works for the author's own
+use-cases, but it's probably buggy beyond that. Please report issues at
+L<the module's GitHub site|https://github.com/jmacdotorg/newsapi-perl>. Code and documentation pull requests are very welcome!
+
 =head1 AUTHOR
 
 Jason McIntosh (jmac@jmac.org)
@@ -273,3 +398,46 @@ This software is Copyright (c) 2019 by Jason McIntosh.
 This is free software, licensed under:
 
   The MIT (X11) License
+
+=head1 A PERSONAL REQUEST
+
+My ability to share and maintain free, open-source software like this
+depends upon my living in a society that allows me the free time and
+personal liberty to create work benefiting people other than just myself
+or my immediate family. I recognize that I got a head start on this due
+to an accident of birth, and I strive to convert some of my unclaimed
+time and attention into work that, I hope, gives back to society in some
+small way.
+
+Worryingly, I find myself today living in a country experiencing a
+profound and unwelcome political upheaval, with its already flawed
+democracy under grave threat from powerful authoritarian elements. These
+powers wish to undermine this society, remolding it according to their
+deeply cynical and strictly zero-sum philosophies, where nobody can gain
+without someone else losing.
+
+Free and open-source software has no place in such a world. As such,
+these autocrats' further ascension would have a deleterious effect on my
+ability to continue working for the public good.
+
+Therefore, if you would like to financially support my work, I would ask
+you to consider a donation to one of the following causes. It would mean
+a lot to me if you did. (You can tell me about it if you'd like to, but
+you don't have to.)
+
+=over
+
+=item *
+
+L<The American Civil Liberties Union|https://aclu.org>
+
+=item *
+
+L<The Democratic National Committee|https://democrats.org>
+
+=item *
+
+L<Earthjustice|https://earthjustice.org>
+
+=back
+

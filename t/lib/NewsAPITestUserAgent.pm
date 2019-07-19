@@ -33,9 +33,21 @@ sub new {
          )
     );
 
-    # /everything, good request.
+    # /everything, good request, with properly formatted 'from' param
     $ua->map_response(
-        qr{everything}, HTTP::Response->new(
+        qr{everything\?from=2010.*T.*Z$}, HTTP::Response->new(
+            200,
+            'OK',
+            [
+                'Content-Type' => 'application/json',
+            ],
+            q{{"status":"ok","totalResults":426,"articles":[{"source":{"id":"the-new-york-times","name":"The New York Times"},"author":"Jolie Kerr","title":"Thank Heaven for Charo","description":"The entertainer wants you to live.","url":"https://www.nytimes.com/2019/06/22/style/charo-cuchi-cuchi.html","urlToImage":"https://static01.nyt.com/images/2019/06/23/fashion/22Charo-3/22Charo-3-facebookJumbo-v2.jpg","publishedAt":"2019-06-23T00:30:16Z","content":"Her first television appearancewas on Johnny Carsons show in 1965; the host asked Charo, What are you? I am cuchi cuchi! came her reply.\r\nAfter that, she got a call from Norman Brokaw, the renowned agent at William Morris who made Marilyn Monroe into a star. … [+1276 chars]"},{"source":{"id":"mashable","name":"Mashable"},"author":"Alexis Nedd","title":"The truly wild first 'Cats' trailer is here. You're definitely not ready.","description":"It's here, it's real, and it's kitty-riffic! Cat-tacular! Meow-gnificent! It's the first trailer for the live-action movie adaptation of Cats ! Starring Taylor Swift, James Corden, Judi Dench, Rebel Wilson, Idris Elba, Jason Derulo, Jennifer Hudson, and many …","url":"https://mashable.com/video/cats-movie-trailer/","urlToImage":"https://mondrian.mashable.com/2019%252F07%252F18%252F98%252F9c1891a0890f47d3a3bafe057e7fefd1.ed023.jpg%252F1200x630.jpg?signature=msvnRq0QxUE4waDd20HWlsMtF4Q=","publishedAt":"2019-07-18T21:11:27Z","content":"It's here, it's real, and it's kitty-riffic! Cat-tacular! Meow-gnificent! It's the first trailer for the live-action movie adaptation of Cats!\r\nStarring Taylor Swift, James Corden, Judi Dench, Rebel Wilson, Idris Elba, Jason Derulo, Jennifer Hudson, and many … [+197 chars]"}]}},
+         )
+    );
+
+    # /everything, good request, with properly formatted 'domains' param
+    $ua->map_response(
+        qr{everything\?domains=example\.com%2Canother}, HTTP::Response->new(
             200,
             'OK',
             [
