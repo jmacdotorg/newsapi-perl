@@ -1,4 +1,4 @@
-package Web::NewsAPI::ArticleSet;
+package Web::NewsAPI::Result;
 
 use Moose;
 
@@ -12,7 +12,7 @@ has 'page' => (
 );
 
 has 'page_size' => (
-    is => 'ro',
+    is => 'rw',
     isa => 'Int',
     default => 20,
     trigger => sub { $_[0]->reset },
@@ -163,7 +163,7 @@ sub reset {
 
 =head1 NAME
 
-Web::NewsAPI::ArticleSet - Object representing articles returned from News API.
+Web::NewsAPI::Result - Object representing a News API query result.
 
 =head1 SYNOPSIS
 
@@ -175,22 +175,22 @@ Web::NewsAPI::ArticleSet - Object representing articles returned from News API.
  );
 
  say "Here are some top American-news headlines about science...";
- my $article_set = $newsapi->top_headlines(
+ my $result = $newsapi->top_headlines(
     category => 'science', country => 'us',
  );
 
- my $count = $article_set->total_results;
+ my $count = $result->total_results;
  say "There are $count such headlines in the news right now.";
 
  say "Here are the top headlines...";
  print_articles();
 
  say "And here's page two...";
- $article_set->next_page;
+ $result->next_page;
  print_articles();
 
  sub print_articles {
-     for my $article ( $article_set->articles ) {
+     for my $article ( $result->articles ) {
         say $article->title;
         say $article->description;
         print "\n";
@@ -199,13 +199,14 @@ Web::NewsAPI::ArticleSet - Object representing articles returned from News API.
 
 =head1 DESCRIPTION
 
-Objects of this class represent a set of News API articles. Generally, you
-won't create these objects yourself; you'll get them as a result of
-calling L<methods on a Web::NewsAPI object|Web::NewsAPI/"Object
-methods">.
+Objects of this class represent the result of a News API query, such as
+C<top-headlines> or C<everything>. Generally, you won't create these
+objects yourself; you'll get them as a result of calling L<methods on a
+Web::NewsAPI object|Web::NewsAPI/"Object methods">.
 
-An ArticleSet object gives you methods to get one "page" of articles, change the current page or page-size, and
-get the count of all articles in the current set.
+An Web::NewsAPI::Result object gives you methods to retrieve one "page" of
+articles, change the current page or page-size, and get the count of all
+articles in the current set.
 
 =head1 METHODS
 
@@ -213,17 +214,18 @@ get the count of all articles in the current set.
 
 =head3 page
 
- my $current_page = $article_set->page;
- $article_set->page( 2 );
+ my $current_page = $result->page;
+ $result->page( 2 );
 
-The current page of results that L<"artciles"> will return, expressed as an integer.
+The current page of results that L<"artciles"> will return, expressed as
+an integer.
 
 Default: 1.
 
 =head3 page_size
 
- my $page_size = $article_set->page_size;
- $article_set->page_size( 10 );
+ my $page_size = $result->page_size;
+ $result->page_size( 10 );
 
 How many articles to return per call to L<"articles">.
 
@@ -233,25 +235,26 @@ Default: 20.
 
 =head3 articles
 
- my @articles = $article_set->articles;
+ my @articles = $result->articles;
 
-Returns all the L<Web::NewsAPI::Article> objects that constitute the current page of results.
+Returns all the L<Web::NewsAPI::Article> objects that constitute the
+current page of results.
 
 =head3 total_results
 
- my $count = $article_set->total_results;
+ my $count = $result->total_results;
 
 Returns the
 
 =head3 turn_page
 
- $article_set->turn_page;
+ $result->turn_page;
 
 Increment the current page.
 
 =head3 turn_page_back
 
- $article_set->turn_page_back;
+ $result->turn_page_back;
 
 Decrement the current page, unless the current page number is already 1.
 
