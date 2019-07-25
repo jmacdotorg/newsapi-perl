@@ -1,6 +1,6 @@
 package Web::NewsAPI;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 use v5.10;
 use Moose;
@@ -12,7 +12,7 @@ use Carp;
 use DateTime::Format::ISO8601::Format;
 use Scalar::Util qw(blessed);
 
-use Web::NewsAPI::Article;
+use Web::NewsAPI::ArticleSet;
 use Web::NewsAPI::Source;
 
 Readonly my $API_BASE_URL => 'https://newsapi.org/v2/';
@@ -29,18 +29,14 @@ has 'api_key' => (
     isa => 'Str',
 );
 
-has 'total_results' => (
-    is => 'rw',
-    isa => 'Maybe[Int]',
-    default => undef,
-);
-
 sub top_headlines {
     my ($self, %args) = @_;
 
-    return $self->_make_articles(
-        $self->_request( 'top-headlines', 'articles', %args)
-    );
+    # Collapse the source-param into a comma-separated string,
+    # if it's an array.
+    $self->_collapse_list( 'source', \%args );
+
+    return $self->_make_article_set( 'top-headlines', \%args );
 }
 
 sub everything {
@@ -49,9 +45,7 @@ sub everything {
     # Collapse each source/domain-param into a comma-separated string,
     # if it's an array.
     for my $param (qw(source domains excludeDomains) ) {
-        if ( $args{$param} && ( ref $args{$param} eq 'ARRAY' ) ) {
-            $args{$param} = join q{,}, @{$args{$param}};
-        }
+        $self->_collapse_list( $param, \%args );
     }
 
     # Convert time-params into ISO 8601 strings, if they are DateTime
@@ -73,35 +67,46 @@ sub everything {
         }
     }
 
-    return $self->_make_articles(
-        $self->_request( 'everything', 'articles', %args )
+    return $self->_make_article_set( 'everything', \%args );
+
+}
+
+sub _make_article_set {
+    my ($self, $endpoint, $args) = @_;
+
+    my $article_set = Web::NewsAPI::ArticleSet->new(
+        newsapi => $self,
+        api_endpoint => $endpoint,
+        api_args => $args,
+        page => $args->{page} || 1,
+        page_size => $args->{pageSize} || 20,
     );
+
+    if (wantarray) {
+        return $article_set->articles;
+    }
+    else {
+        return $article_set;
+    }
+}
+
+sub _collapse_list {
+    my ($self, $param, $args) = @_;
+    if ( $args->{$param} && ( ref $args->{$param} eq 'ARRAY' ) ) {
+        $args->{$param} = join q{,}, @{$args->{$param}};
+    }
 }
 
 sub sources {
     my ($self, %args) = @_;
 
     my @sources;
-    for my $source_data ( $self->_request( 'sources', 'sources', %args ) ) {
+    my ($source_data_list) = $self->_request( 'sources', 'sources', %args );
+    for my $source_data ( @$source_data_list ) {
         push @sources, Web::NewsAPI::Source->new( $source_data );
     }
 
     return @sources;
-}
-
-sub _make_articles {
-    my ($self, @article_data) = @_;
-    my @articles;
-    for my $article_data (@article_data) {
-        push @articles, Web::NewsAPI::Article->new(
-            %$article_data,
-            source => Web::NewsAPI::Source->new(
-                id => $article_data->{source}->{id},
-                name => $article_data->{source}->{name},
-            ),
-        );
-    }
-    return @articles;
 }
 
 sub _build_ua {
@@ -125,10 +130,7 @@ sub _request {
     my $response = $self->ua->get( $uri );
     if ($response->is_success) {
         my $data_ref = decode_json( $response->content );
-        if ( exists $data_ref->{totalResults} ) {
-            $self->total_results( $data_ref->{totalResults} );
-        }
-        return @{ $data_ref->{$container} };
+        return ($data_ref->{$container}, $data_ref->{totalResults});
     }
     else {
         my $code = $response->code;
@@ -310,7 +312,11 @@ News API will return an error if you mix this with C<sources>.
 
 =item sources
 
-A list of News API source IDs, rendered as a comma-separated string.
+I<Either> a comma-separated string I<or> an array reference of News API
+news source ID strings to limit results from.
+
+See L<the News API sources index|https://newsapi.org/sources> for a list
+of valid source IDs.
 
 News API will return an error if you mix this with C<country> or
 C<category>.
