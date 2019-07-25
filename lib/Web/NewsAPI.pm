@@ -161,14 +161,14 @@ Web::NewsAPI - Fetch and search news headlines and sources from News API
  say "Here are the top ten headlines from American news sources...";
  # This will be a Web::NewsAPI::Results object.
  my $result = $newsapi->top_headlines( country => 'us', pageSize => 10 );
- for my $article ( $result->article ) {
+ for my $article ( $result->articles ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
 
  say "Here are the top ten headlines worldwide containing 'chicken'...";
  my $chicken_heds = $newsapi->everything( q => 'chicken', pageSize => 10 );
- for my $article ( $chicken_hed->articles ) {
+ for my $article ( $chicken_heds->articles ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
@@ -177,7 +177,10 @@ Web::NewsAPI - Fetch and search news headlines and sources from News API
 
 
  say "Here are some sources for English-language technology news...";
- my @sources = $newsapi->sources( category => 'technology', language => 'en' );
+ my @sources = $newsapi->sources(
+    category => 'technology',
+    language => 'en'
+ );
  for my $source ( @sources ) {
     # Each is a Web::NewsAPI::Source object.
     say $source->name;
@@ -204,7 +207,8 @@ fetch a key for yourself by registering a free account with News API
 L<at its website|https://newsapi.org>.
 
 Note that the validity of the API key you provide isn't checked until
-you try calling one of this module's object methods.
+this object (or one of its derivative objects) tries to send a query to
+News API.
 
 =head2 Object Methods
 

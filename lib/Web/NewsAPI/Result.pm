@@ -186,7 +186,7 @@ Web::NewsAPI::Result - Object representing a News API query result.
  print_articles();
 
  say "And here's page two...";
- $result->next_page;
+ $result->turn_page;
  print_articles();
 
  sub print_articles {
@@ -244,7 +244,8 @@ current page of results.
 
  my $count = $result->total_results;
 
-Returns the
+Returns the total number of results that News API has for the given
+query parameters.
 
 =head3 turn_page
 
@@ -273,7 +274,7 @@ happened> in between the first page's query and the second, effectively
 causing new entries at the top of the first page and pushing all the
 older results down.
 
-This sort of behavior appears due to the nature of news, and software
+This sort of behavior occurs due to the nature of news, and software
 using this module should be aware of it.
 
 =head1 AUTHOR
