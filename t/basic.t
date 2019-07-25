@@ -16,6 +16,7 @@ my $newsapi = Web::NewsAPI->new(
     ua      => $ua,
 );
 
+# Try to make a query with insufficient parameters, and let News API complain.
 eval {
     my $headlines_set = $newsapi->top_headlines->articles;
 };

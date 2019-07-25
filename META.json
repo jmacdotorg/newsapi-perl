@@ -75,7 +75,7 @@
          "web" : "https://github.com/jmacdotorg/newsapi-perl"
       }
    },
-   "version" : "0.001",
+   "version" : "0.002",
    "x_authority" : "cpan:JMAC",
    "x_contributors" : [
       "Jason McIntosh <jmac@jmac.org>"

@@ -12,7 +12,7 @@ use Carp;
 use DateTime::Format::ISO8601::Format;
 use Scalar::Util qw(blessed);
 
-use Web::NewsAPI::ArticleSet;
+use Web::NewsAPI::Result;
 use Web::NewsAPI::Source;
 
 Readonly my $API_BASE_URL => 'https://newsapi.org/v2/';
@@ -74,7 +74,7 @@ sub everything {
 sub _make_article_set {
     my ($self, $endpoint, $args) = @_;
 
-    my $article_set = Web::NewsAPI::ArticleSet->new(
+    my $article_set = Web::NewsAPI::Result->new(
         newsapi => $self,
         api_endpoint => $endpoint,
         api_args => $args,
@@ -159,18 +159,22 @@ Web::NewsAPI - Fetch and search news headlines and sources from News API
  );
 
  say "Here are the top ten headlines from American news sources...";
- my @headlines = $newsapi->top_headlines( country => 'us', pageSize => 10 );
- for my $article ( @headlines ) {
+ # This will be a Web::NewsAPI::Results object.
+ my $result = $newsapi->top_headlines( country => 'us', pageSize => 10 );
+ for my $article ( $result->article ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
 
  say "Here are the top ten headlines worldwide containing 'chicken'...";
- my @chicken_heds = $newsapi->everything( q => 'chicken', pageSize => 10 );
- for my $article ( @chicken_heds ) {
+ my $chicken_heds = $newsapi->everything( q => 'chicken', pageSize => 10 );
+ for my $article ( $chicken_hed->articles ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
+ say "The total number of chicken-flavor articles returned: "
+     . $chicken_heds->total_results;
+
 
  say "Here are some sources for English-language technology news...";
  my @sources = $newsapi->sources( category => 'technology', language => 'en' );
@@ -211,11 +215,20 @@ from News API.
 
 =head3 everything
 
- my @articles_about_chickens = $newsapi->everything( q => 'chickens' );
+ # Call in scalar context to get a result object.
+ my $chicken_result-> = $newsapi->everything( q => 'chickens' );
 
-Returns a number of L<Web::NewsAPI::Article> objects representing all
-news articles matching the query parameters you provide. The
-hash must contain I<at least one> of the following keys:
+ # Or call in array context to just get one page of articles.
+ my @chicken_stories = $newsapi->everything( q => 'chickens' );
+
+In scalar context, returns a L<Web::NewsAPI::Result> object representing
+news articles matching the query parameters you provide. In array
+context, it returns one page-worth of L<Web::NewsAPI::Article> objects
+(equivalent to calling L<Web::NewsAPI::Result/"articles"> on the result
+object, and then discarding it).
+
+In either case, the argument hash must contain I<at least one> of the
+following keys:
 
 =over
 
@@ -279,17 +292,30 @@ maximum.
 
 =item page
 
-Use this to page through the results.
+Which page of results to return. The default is 1.
 
 =back
 
 =head3 top_headlines
 
- my @articles = $newsapi->top_headlines( country => 'us' );
+ # Call in scalar context to get a result object.
+ my $top_us_headlines = $newsapi->top_headlines( country => 'us' );
 
-Returns a number of L<Web::NewsAPI::Article> objects representing
-current top news headlines, narrowed by the supplied argument hash. The
-hash must contain I<at least one> of the following keys:
+ # Or call in array context to just get one page of articles.
+ my @top_us_headlines = $newsapi->top_headlines( country => 'us' );
+
+Like L<"everything">, but limits results only to the latest articles,
+sorted by recency. (Note that this arguments are a little different, as
+well.)
+
+In scalar context, returns a L<Web::NewsAPI::Result> object representing
+news articles matching the query parameters you provide. In array
+context, it returns one page-worth of L<Web::NewsAPI::Article> objects
+(equivalent to calling L<Web::NewsAPI::Result/"articles"> on the result
+object, and then discarding it).
+
+In either case, the argument hash must contain I<at least one> of the
+following keys:
 
 =over
 
@@ -342,16 +368,6 @@ Use this to page through the results if the total results found is
 greater than the page size.
 
 =back
-
-=head3 total_results
-
- my @articles = $newsapi->top_headlines( country => 'us' );
- my $number_of_articles = $newsapi->total_results;
-
-Returns the I<total> number of articles that News API claims for the
-most recent L<"top_headlines"> or L<"source"> query. This will often be
-larger than the single "page" of results actually returned by either
-method.
 
 =head3 sources
 
