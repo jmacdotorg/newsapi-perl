@@ -51,8 +51,13 @@ news headlines and sources.
 # Installation
 
 This module's most recent release [is on CPAN](https://metacpan.org/pod/Web::NewsAPI)! Your best
-bet is to install it via the CPAN installation tool of your choice. (My
-favorite is [cpanm](https://metacpan.org/pod/App::cpanminus).)
+bet is to install it via the CPAN installation tool of your choice.
+
+For example, if you have [cpanminus](http://cpanmin.us) installed on your system:
+
+    cpanm Web::NewsAPI
+
+(And if you don't have cpanminus, maybe install cpanminus? It's likely available through your favorite package manager.)
 
 To instead install it from source, run these commands:
 
