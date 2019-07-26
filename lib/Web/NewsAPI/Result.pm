@@ -240,6 +240,13 @@ Default: 20.
 Returns all the L<Web::NewsAPI::Article> objects that constitute the
 current page of results.
 
+Invoking this method will call News API using the API key you provided
+during construction of the original L<Web::NewsAPI> object. If that call
+fails, then this module will throw an exception, sharing the error code
+and message passed back from News API.
+
+See L<"NOTES"> for more information on page content.
+
 =head3 total_results
 
  my $count = $result->total_results;

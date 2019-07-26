@@ -212,10 +212,10 @@ News API.
 
 =head2 Object Methods
 
-Each of these methods will attempt to call News API using the API key
-you provided during construction. If the call fails, then this module
-will throw an exception, sharing the error code and message passed back
-from News API.
+Depending on context, these methods may attempt to call News API using
+the API key you provided during construction. If that call fails, then
+this module will throw an exception, sharing the error code and message
+passed back from News API.
 
 =head3 everything
 

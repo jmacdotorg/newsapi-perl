@@ -20,22 +20,27 @@ news headlines and sources.
  );
 
  say "Here are the top ten headlines from American news sources...";
- my @headlines = $newsapi->top_headlines( country => 'us', pageSize => 10 );
- for my $article ( @headlines ) {
+ # This will be a Web::NewsAPI::Results object.
+ my $result = $newsapi->top_headlines( country => 'us', pageSize => 10 );
+ for my $article ( $result->articles ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
 
  say "Here are the top ten headlines worldwide containing 'chicken'...";
- my @chicken_heds = $newsapi->everything( q => 'chicken', pageSize => 10 );
- for my $article ( @chicken_heds ) {
+ my $chicken_heds = $newsapi->everything( q => 'chicken', pageSize => 10 );
+ for my $article ( $chicken_heds->articles ) {
     # Each is a Web::NewsAPI::Article object.
     say $article->title;
  }
+ say "The total number of chicken-flavor articles returned: "
+     . $chicken_heds->total_results;
+
 
  say "Here are some sources for English-language technology news...";
  my @sources = $newsapi->sources(
-    category => 'technology', language => 'en' 
+    category => 'technology',
+    language => 'en'
  );
  for my $source ( @sources ) {
     # Each is a Web::NewsAPI::Source object.
