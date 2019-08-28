@@ -113,6 +113,9 @@ sub _build_ua {
     my $self = shift;
 
     my $ua = LWP::UserAgent->new;
+    $ua->ssl_opts(
+        SSL_version => 'TLSv1_2',
+    );
     $ua->default_header(
         'X-Api-Key' => $self->api_key,
     );
