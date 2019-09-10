@@ -217,7 +217,7 @@ articles in the current set.
  my $current_page = $result->page;
  $result->page( 2 );
 
-The current page of results that L<"artciles"> will return, expressed as
+The current page of results that L<"articles"> will return, expressed as
 an integer.
 
 Default: 1.
